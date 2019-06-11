@@ -236,6 +236,7 @@
     "github.com/prometheus/client_golang/prometheus",
     "github.com/spf13/viper",
     "github.com/stretchr/testify",
+    "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
