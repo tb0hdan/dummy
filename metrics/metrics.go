@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	RequestCounts                         prometheus.Counter
-	TimeIntervalRequested                 prometheus.Histogram
-	TimeIntervalTotalConsumptionRequested prometheus.Histogram
+	RequestCounts prometheus.Counter
+	RequestTiming prometheus.Histogram
+	SomeGauge     prometheus.Gauge
 )
 
 func Register() {
@@ -16,23 +16,26 @@ func Register() {
 		Help: "Number of requests",
 	})
 
-	TimeIntervalRequested = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:    "time_interval_requested_hours",
-		Help:    "The time interval requested in hours",
+	RequestTiming = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Name:    "request_timing",
+		Help:    "The request timing",
 		Buckets: prometheus.ExponentialBuckets(0.5, 2, 15),
 	})
 
-	TimeIntervalTotalConsumptionRequested = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:    "time_interval_total_consumption_requested_hours",
-		Help:    "The time interval total consumption requested in hours",
-		Buckets: prometheus.ExponentialBuckets(0.5, 2, 15),
+	SomeGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "some_gauge",
+		Help: "The gauge for something",
 	})
 
-	prometheus.MustRegister(TimeIntervalRequested, TimeIntervalTotalConsumptionRequested, RequestCounts)
+	prometheus.MustRegister(
+		RequestTiming,
+		RequestCounts,
+		SomeGauge,
+	)
 }
 
 func Unregister() { // nolint megacheck
-	prometheus.Unregister(TimeIntervalRequested)
-	prometheus.Unregister(TimeIntervalTotalConsumptionRequested)
+	prometheus.Unregister(RequestTiming)
 	prometheus.Unregister(RequestCounts)
+	prometheus.Unregister(SomeGauge)
 }
