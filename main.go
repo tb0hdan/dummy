@@ -5,10 +5,15 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/akhripko/dummy/log"
+	"github.com/akhripko/dummy/metrics"
 	"github.com/akhripko/dummy/options"
+	"github.com/akhripko/dummy/service"
+	"github.com/akhripko/dummy/service_healthcheck"
+	"github.com/akhripko/dummy/service_prometheus"
 )
 
 func main() {
@@ -20,8 +25,31 @@ func main() {
 		return
 	}
 
+	// register metrics
+	metrics.Register()
+
+	// prepare context
 	ctx, cancel := context.WithCancel(context.Background())
 	setupGracefulShutdown(cancel)
+	var wg = &sync.WaitGroup{}
+
+	// main service
+	// TODO: fix it
+	var srv service.Service
+
+	healthChecks := []func() error{}
+	readinessChecks := []func() error{}
+
+	// health check service
+	prometheusSrv := service_prometheus.New(config.PrometheusPort)
+	prometheusSrv.Run(ctx, wg)
+
+	// health check service
+	healthSrv := service_healthcheck.New(config.HealthCheckPort, healthChecks, readinessChecks)
+	healthSrv.Run(ctx, wg)
+
+	// wait while services work
+	wg.Wait()
 }
 
 func initLogger(config *options.Config) error {
