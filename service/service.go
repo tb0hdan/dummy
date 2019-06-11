@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/akhripko/dummy/log"
+	"github.com/gorilla/mux"
 )
 
 type Service interface {
@@ -15,14 +16,14 @@ type Service interface {
 	ReadRunError() error
 }
 
-// TODO: fix it
 func New(port int) Service {
 	srv := service{
 		http: &http.Server{
-			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
-			Handler: handler(),
+			Addr: fmt.Sprintf("0.0.0.0:%d", port),
 		},
 	}
+	srv.initHandler()
+	return &srv
 }
 
 type service struct {
@@ -31,7 +32,9 @@ type service struct {
 }
 
 func (s *service) initHandler() {
-
+	r := mux.NewRouter()
+	// TODO: add rules
+	s.http.Handler = r
 }
 
 func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
