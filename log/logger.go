@@ -26,3 +26,21 @@ func StrToLogLevel(s string) Level {
 		return DebugLvl
 	}
 }
+
+func SetLogger(l Logger) {
+	logger = l
+}
+
+var logger Logger
+
+func Error(v ...interface{}) {
+	logger.Error(v...)
+}
+
+func Info(v ...interface{}) {
+	logger.Info(v...)
+}
+
+func Debug(v ...interface{}) {
+	logger.Debug(v...)
+}

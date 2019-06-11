@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ReadEnv() (*Config, error) {
+func ReadEnv() *Config {
 	viper.AutomaticEnv()
 
 	viper.SetEnvPrefix("APP")
@@ -19,5 +19,5 @@ func ReadEnv() (*Config, error) {
 		Port:            viper.GetInt("HTTP_PORT"),
 		HealthCheckPort: viper.GetInt("HEALTH_CHECK_PORT"),
 		PrometheusPort:  viper.GetInt("PROMETHEUS_PORT"),
-	}, nil
+	}
 }

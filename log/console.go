@@ -11,11 +11,11 @@ type ConsoleLogger struct {
 	w   io.Writer
 }
 
-func NewConsoleLogger(lvl Level) Logger {
+func NewConsoleLogger(lvl Level) (Logger, error) {
 	return &ConsoleLogger{
 		lvl: lvl,
 		w:   os.Stdout,
-	}
+	}, nil
 }
 
 func (l *ConsoleLogger) Error(v ...interface{}) {
