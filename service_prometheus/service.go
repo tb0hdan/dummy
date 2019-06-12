@@ -23,6 +23,15 @@ type service struct {
 	readiness bool
 }
 
+func New(port int) Service {
+	return &service{
+		http: &http.Server{
+			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
+			Handler: handler(),
+		},
+	}
+}
+
 func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Add(1)
 	log.Info("prometheus service: begin run")
@@ -48,15 +57,6 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}()
 
 	s.readiness = true
-}
-
-func New(port int) Service {
-	return &service{
-		http: &http.Server{
-			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
-			Handler: handler(),
-		},
-	}
 }
 
 func handler() http.Handler {

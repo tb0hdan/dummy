@@ -5,20 +5,20 @@ import (
 )
 
 var (
-	RequestCounts prometheus.Counter
-	RequestTiming prometheus.Histogram
-	SomeGauge     prometheus.Gauge
+	HelloRequestCounts prometheus.Counter
+	HelloRequestTiming prometheus.Histogram
+	SomeGauge          prometheus.Gauge
 )
 
 func Register() {
-	RequestCounts = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "request_counts",
-		Help: "Number of requests",
+	HelloRequestCounts = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "hello_requests_count",
+		Help: "hello requests count",
 	})
 
-	RequestTiming = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:    "request_timing",
-		Help:    "The request timing",
+	HelloRequestTiming = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Name:    "hello_request_timing",
+		Help:    "hello request timing",
 		Buckets: prometheus.ExponentialBuckets(0.5, 2, 15),
 	})
 
@@ -28,14 +28,14 @@ func Register() {
 	})
 
 	prometheus.MustRegister(
-		RequestTiming,
-		RequestCounts,
+		HelloRequestTiming,
+		HelloRequestCounts,
 		SomeGauge,
 	)
 }
 
 func Unregister() { // nolint megacheck
-	prometheus.Unregister(RequestTiming)
-	prometheus.Unregister(RequestCounts)
+	prometheus.Unregister(HelloRequestTiming)
+	prometheus.Unregister(HelloRequestCounts)
 	prometheus.Unregister(SomeGauge)
 }

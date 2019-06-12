@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/akhripko/dummy/metrics"
+
 	"github.com/akhripko/dummy/log"
 	"github.com/gorilla/mux"
 )
@@ -45,7 +47,12 @@ func (s *service) setupHttp(srv *http.Server) {
 func (s *service) buildHandler() http.Handler {
 	r := mux.NewRouter()
 	// path -> handlers
-	r.HandleFunc("/hello", s.hello).Methods("GET")
+
+	// hello request
+	hello := Counter(metrics.HelloRequestCounts, s.hello)
+	hello = Timer(metrics.HelloRequestTiming, hello)
+	r.HandleFunc("/hello", hello).Methods("GET")
+
 	// ==============
 	return r
 }
@@ -82,7 +89,7 @@ func (s *service) HealthCheck() error {
 	if s.runErr != nil {
 		return errors.New("run service issue")
 	}
-	// TODO: add more checks like db.Ping()
+	// TODO: add more checks like s.db.Ping()
 	return nil
 }
 

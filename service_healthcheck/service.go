@@ -19,6 +19,15 @@ type service struct {
 	http *http.Server
 }
 
+func New(port int, healthChecks []func() error, readinessChecks []func() error) Service {
+	return &service{
+		http: &http.Server{
+			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
+			Handler: buildHandler(healthChecks, readinessChecks),
+		},
+	}
+}
+
 func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Add(1)
 	log.Info("healthcheck service: begin run")
@@ -41,15 +50,6 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 			log.Error("healthcheck service shutdown error:", err.Error())
 		}
 	}()
-}
-
-func New(port int, healthChecks []func() error, readinessChecks []func() error) Service {
-	return &service{
-		http: &http.Server{
-			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
-			Handler: buildHandler(healthChecks, readinessChecks),
-		},
-	}
 }
 
 func buildHandler(healthChecks []func() error, readinessChecks []func() error) http.Handler {
