@@ -23,6 +23,10 @@ grpcgen:
 build:
 	go build -o artifacts/svc
 
+.PHONY: run
+run:
+	go run ./main.go
+
 .PHONY: lint
 lint:
 	golangci-lint run
