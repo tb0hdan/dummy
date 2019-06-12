@@ -45,7 +45,7 @@ linters:
   disable-all: true
   enable:
     - govet
-    - errcheck
+#    - errcheck
     - gocyclo
     - structcheck
     - varcheck

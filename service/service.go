@@ -28,7 +28,7 @@ func New(port int) Service {
 	var srv service
 	// initialize state
 	go srv.initService()
-	srv.setupHttp(&httpSrv)
+	srv.setupHTTP(&httpSrv)
 
 	return &srv
 }
@@ -39,7 +39,7 @@ type service struct {
 	readiness bool
 }
 
-func (s *service) setupHttp(srv *http.Server) {
+func (s *service) setupHTTP(srv *http.Server) {
 	srv.Handler = s.buildHandler()
 	s.http = srv
 }
@@ -74,7 +74,7 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		<-ctx.Done()
-		sdCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		sdCtx, _ := context.WithTimeout(context.Background(), 5*time.Second) // nolint
 		err := s.http.Shutdown(sdCtx)
 		if err != nil {
 			log.Error("service shutdown error:", err)
@@ -83,7 +83,7 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (s *service) HealthCheck() error {
-	if s.readiness == false {
+	if !s.readiness {
 		return errors.New("service is't ready yet")
 	}
 	if s.runErr != nil {
@@ -94,7 +94,7 @@ func (s *service) HealthCheck() error {
 }
 
 func (s *service) ReadinessCheck() error {
-	if s.readiness == false {
+	if !s.readiness {
 		return errors.New("service is't ready yet")
 	}
 	if s.runErr != nil {

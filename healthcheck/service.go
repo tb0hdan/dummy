@@ -1,4 +1,4 @@
-package service_healthcheck
+package healthcheck
 
 import (
 	"context"
@@ -44,7 +44,7 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		<-ctx.Done()
-		sdCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		sdCtx, _ := context.WithTimeout(context.Background(), 5*time.Second) // nolint
 		err := s.http.Shutdown(sdCtx)
 		if err != nil {
 			log.Error("healthcheck service shutdown error:", err.Error())

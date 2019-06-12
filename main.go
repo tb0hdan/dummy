@@ -8,12 +8,12 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/akhripko/dummy/healthcheck"
 	"github.com/akhripko/dummy/log"
 	"github.com/akhripko/dummy/metrics"
 	"github.com/akhripko/dummy/options"
+	"github.com/akhripko/dummy/prometheus"
 	"github.com/akhripko/dummy/service"
-	"github.com/akhripko/dummy/service_healthcheck"
-	"github.com/akhripko/dummy/service_prometheus"
 )
 
 func main() {
@@ -37,11 +37,11 @@ func main() {
 	// build main service
 	srv := service.New(config.Port)
 	// build prometheus service
-	prometheusSrv := service_prometheus.New(config.PrometheusPort)
+	prometheusSrv := prometheus.New(config.PrometheusPort)
 	// build healthcheck service
 	healthChecks := []func() error{srv.HealthCheck, prometheusSrv.StateCheck}
 	readinessChecks := []func() error{srv.ReadinessCheck, prometheusSrv.StateCheck}
-	healthSrv := service_healthcheck.New(config.HealthCheckPort, healthChecks, readinessChecks)
+	healthSrv := healthcheck.New(config.HealthCheckPort, healthChecks, readinessChecks)
 
 	// run service
 	healthSrv.Run(ctx, wg)

@@ -1,4 +1,4 @@
-package service_prometheus
+package prometheus
 
 import (
 	"context"
@@ -49,7 +49,7 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		<-ctx.Done()
-		sdCtx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		sdCtx, _ := context.WithTimeout(context.Background(), 5*time.Second) // nolint
 		err := s.http.Shutdown(sdCtx)
 		if err != nil {
 			log.Error("prometheus service shutdown error:", err.Error())
@@ -66,7 +66,7 @@ func handler() http.Handler {
 }
 
 func (s *service) StateCheck() error {
-	if s.readiness == false {
+	if !s.readiness {
 		return errors.New("prometheus service is't ready yet")
 	}
 	if s.runErr != nil {
