@@ -17,36 +17,36 @@ import (
 )
 
 func main() {
+	// read service config from os env
 	config := options.ReadEnv()
+	// init logger
 	err := initLogger(config)
 	if err != nil {
 		fmt.Println("log initialization error:", err.Error())
 		os.Exit(1)
 		return
 	}
-
 	// register metrics
 	metrics.Register()
 
-	// prepare context
+	// prepare main context
 	ctx, cancel := context.WithCancel(context.Background())
 	setupGracefulShutdown(cancel)
 	var wg = &sync.WaitGroup{}
 
-	// main service
-	// TODO: fix it
-	var srv service.Service
-
-	healthChecks := []func() error{}
-	readinessChecks := []func() error{}
-
-	// health check service
+	// build main service
+	srv := service.New(config.Port)
+	// build prometheus service
 	prometheusSrv := service_prometheus.New(config.PrometheusPort)
-	prometheusSrv.Run(ctx, wg)
-
-	// health check service
+	// build healthcheck service
+	healthChecks := []func() error{srv.HealthCheck, prometheusSrv.HealthCheck}
+	readinessChecks := []func() error{srv.ReadinessCheck, prometheusSrv.ReadinessCheck}
 	healthSrv := service_healthcheck.New(config.HealthCheckPort, healthChecks, readinessChecks)
+
+	// run service
 	healthSrv.Run(ctx, wg)
+	prometheusSrv.Run(ctx, wg)
+	srv.Run(ctx, wg)
 
 	// wait while services work
 	wg.Wait()
