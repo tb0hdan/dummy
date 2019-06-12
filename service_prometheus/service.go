@@ -14,8 +14,7 @@ import (
 
 type Service interface {
 	Run(ctx context.Context, wg *sync.WaitGroup)
-	HealthCheck() error
-	ReadinessCheck() error
+	StateCheck() error
 }
 
 type service struct {
@@ -66,19 +65,12 @@ func handler() http.Handler {
 	return handler
 }
 
-func (s *service) HealthCheck() error {
-	if s.runErr != nil {
-		return errors.New("run prometheus service issue")
-	}
-	return nil
-}
-
-func (s *service) ReadinessCheck() error {
-	if s.runErr != nil {
-		return errors.New("run prometheus service issue")
-	}
+func (s *service) StateCheck() error {
 	if s.readiness == false {
 		return errors.New("prometheus service is't ready yet")
+	}
+	if s.runErr != nil {
+		return errors.New("run prometheus service issue")
 	}
 	return nil
 }

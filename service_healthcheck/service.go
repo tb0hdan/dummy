@@ -2,7 +2,6 @@ package service_healthcheck
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"

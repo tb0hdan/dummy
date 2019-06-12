@@ -76,18 +76,22 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (s *service) HealthCheck() error {
+	if s.readiness == false {
+		return errors.New("service is't ready yet")
+	}
 	if s.runErr != nil {
 		return errors.New("run service issue")
 	}
+	// TODO: add more checks like db.Ping()
 	return nil
 }
 
 func (s *service) ReadinessCheck() error {
-	if s.runErr != nil {
-		return errors.New("run service issue")
-	}
 	if s.readiness == false {
 		return errors.New("service is't ready yet")
+	}
+	if s.runErr != nil {
+		return errors.New("run service issue")
 	}
 	return nil
 }
