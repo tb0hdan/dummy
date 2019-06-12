@@ -22,7 +22,7 @@ type Service interface {
 
 func New(port int) Service {
 	httpSrv := http.Server{
-		Addr: fmt.Sprintf("0.0.0.0:%d", port),
+		Addr: fmt.Sprintf(":%d", port),
 	}
 
 	var srv service
@@ -63,10 +63,11 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		defer wg.Done()
+		log.Debug("service addr:", s.http.Addr)
 		err := s.http.ListenAndServe()
 		if err != nil {
 			s.runErr = err
-			log.Error("service run error:", err)
+			log.Error("service end run:", err)
 			return
 		}
 		log.Info("service: end run")

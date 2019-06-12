@@ -22,7 +22,7 @@ type service struct {
 func New(port int, healthChecks []func() error, readinessChecks []func() error) Service {
 	return &service{
 		http: &http.Server{
-			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
+			Addr:    fmt.Sprintf(":%d", port),
 			Handler: buildHandler(healthChecks, readinessChecks),
 		},
 	}
@@ -34,9 +34,10 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		defer wg.Done()
+		log.Debug("healthcheck service addr:", s.http.Addr)
 		err := s.http.ListenAndServe()
 		if err != nil {
-			log.Error("healthcheck service run error:", err.Error())
+			log.Error("healthcheck service end run:", err.Error())
 			return
 		}
 		log.Info("healthcheck service: end run")
@@ -56,6 +57,7 @@ func buildHandler(healthChecks []func() error, readinessChecks []func() error) h
 	handler := http.NewServeMux()
 	handler.HandleFunc("/version", serveVersion)
 	handler.HandleFunc("/", func(res http.ResponseWriter, _ *http.Request) { serveCheck(res, healthChecks) })
+	handler.HandleFunc("/health", func(res http.ResponseWriter, _ *http.Request) { serveCheck(res, healthChecks) })
 	handler.HandleFunc("/ready", func(res http.ResponseWriter, _ *http.Request) { serveCheck(res, readinessChecks) })
 	return handler
 }

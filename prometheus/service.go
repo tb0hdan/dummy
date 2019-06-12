@@ -26,7 +26,7 @@ type service struct {
 func New(port int) Service {
 	return &service{
 		http: &http.Server{
-			Addr:    fmt.Sprintf("0.0.0.0:%d", port),
+			Addr:    fmt.Sprintf(":%d", port),
 			Handler: handler(),
 		},
 	}
@@ -38,10 +38,11 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		defer wg.Done()
+		log.Debug("prometheus service addr:", s.http.Addr)
 		err := s.http.ListenAndServe()
 		if err != nil {
 			s.runErr = err
-			log.Error("prometheus service run error:", err.Error())
+			log.Error("prometheus service end run:", err.Error())
 			return
 		}
 		log.Info("prometheus service: end run")
