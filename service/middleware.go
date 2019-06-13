@@ -7,7 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func Timer(m prometheus.Observer, next func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
+func Timer(m prometheus.Observer, next http.HandlerFunc) http.HandlerFunc {
 	if m == nil {
 		return next
 	}
@@ -18,7 +18,7 @@ func Timer(m prometheus.Observer, next func(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func Counter(m prometheus.Counter, next func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
+func Counter(m prometheus.Counter, next http.HandlerFunc) http.HandlerFunc {
 	if m == nil {
 		return next
 	}
