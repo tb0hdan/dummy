@@ -27,6 +27,7 @@ func main() {
 		os.Exit(1)
 		return
 	}
+	log.Info("begin...")
 	// register metrics
 	metrics.Register()
 
@@ -36,7 +37,7 @@ func main() {
 	var wg = &sync.WaitGroup{}
 
 	// build storage
-	db, err := storage.NewSQLDB(storage.SQLDBConfig(config.SQLDB))
+	db, err := storage.NewSQLDB(ctx, storage.SQLDBConfig(config.SQLDB))
 	if err != nil {
 		log.Error("sql db init error:", err.Error())
 		os.Exit(1)
@@ -57,6 +58,7 @@ func main() {
 
 	// wait while services work
 	wg.Wait()
+	log.Info("end")
 }
 
 func initLogger(config *options.Config) error {

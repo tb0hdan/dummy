@@ -1,8 +1,11 @@
 package storage
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/akhripko/dummy/log"
 
 	_ "github.com/lib/pq" //nolint
 )
@@ -20,7 +23,7 @@ type SQLDBConfig struct {
 	MaxOpenConns int
 }
 
-func NewSQLDB(c SQLDBConfig) (*SQLDB, error) {
+func NewSQLDB(ctx context.Context, c SQLDBConfig) (*SQLDB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		c.Host, c.Port, c.User, c.Pass, c.DBName)
@@ -29,6 +32,15 @@ func NewSQLDB(c SQLDBConfig) (*SQLDB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	go func() {
+		<-ctx.Done()
+		err := db.Close()
+		if err != nil {
+			log.Error("close sqldb connection error:", err.Error())
+		}
+		log.Info("close sqldb connection")
+	}()
 
 	db.SetMaxOpenConns(c.MaxOpenConns)
 
