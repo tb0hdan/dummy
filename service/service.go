@@ -17,10 +17,9 @@ import (
 type Service interface {
 	Run(ctx context.Context, wg *sync.WaitGroup)
 	HealthCheck() error
-	ReadinessCheck() error
 }
 
-func New(port int) Service {
+func New(port int, storage Storage) Service {
 	httpSrv := http.Server{
 		Addr: fmt.Sprintf(":%d", port),
 	}
@@ -29,6 +28,7 @@ func New(port int) Service {
 	// initialize state
 	go srv.initService()
 	srv.setupHTTP(&httpSrv)
+	srv.storage = storage
 
 	return &srv
 }
@@ -37,6 +37,7 @@ type service struct {
 	http      *http.Server
 	runErr    error
 	readiness bool
+	storage   Storage
 }
 
 func (s *service) setupHTTP(srv *http.Server) {
@@ -90,16 +91,8 @@ func (s *service) HealthCheck() error {
 	if s.runErr != nil {
 		return errors.New("run service issue")
 	}
-	// TODO: add more checks like s.db.Ping()
-	return nil
-}
-
-func (s *service) ReadinessCheck() error {
-	if !s.readiness {
-		return errors.New("service is't ready yet")
-	}
-	if s.runErr != nil {
-		return errors.New("run service issue")
+	if s.storage == nil || s.storage.Ping() != nil {
+		return errors.New("storage issue")
 	}
 	return nil
 }

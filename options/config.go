@@ -5,4 +5,14 @@ type Config struct {
 	Port            int
 	HealthCheckPort int
 	PrometheusPort  int
+	SQLDB           SQLDBConfig
+}
+
+type SQLDBConfig struct {
+	Host         string
+	Port         int
+	User         string
+	Pass         string
+	DBName       string
+	MaxOpenConns int
 }

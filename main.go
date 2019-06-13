@@ -14,6 +14,7 @@ import (
 	"github.com/akhripko/dummy/options"
 	"github.com/akhripko/dummy/prometheus"
 	"github.com/akhripko/dummy/service"
+	"github.com/akhripko/dummy/storage"
 )
 
 func main() {
@@ -34,14 +35,20 @@ func main() {
 	setupGracefulShutdown(cancel)
 	var wg = &sync.WaitGroup{}
 
+	// build storage
+	db, err := storage.NewSQLDB(storage.SQLDBConfig(config.SQLDB))
+	if err != nil {
+		log.Error("sql db init error:", err.Error())
+		os.Exit(1)
+	}
+
 	// build main service
-	srv := service.New(config.Port)
+	srv := service.New(config.Port, db)
 	// build prometheus service
 	prometheusSrv := prometheus.New(config.PrometheusPort)
 	// build healthcheck service
-	healthChecks := []func() error{srv.HealthCheck, prometheusSrv.StateCheck}
-	readinessChecks := []func() error{srv.ReadinessCheck, prometheusSrv.StateCheck}
-	healthSrv := healthcheck.New(config.HealthCheckPort, healthChecks, readinessChecks)
+	healthChecks := []func() error{srv.HealthCheck, prometheusSrv.HealthCheck}
+	healthSrv := healthcheck.New(config.HealthCheckPort, healthChecks)
 
 	// run service
 	healthSrv.Run(ctx, wg)

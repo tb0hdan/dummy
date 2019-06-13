@@ -38,3 +38,8 @@ test:
 .PHONY: dockerise
 dockerise:
 	docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" -f Dockerfile .
+
+.PHONY: mock_service_db
+mock_service_db:
+	mockgen -source=service/storage.go -destination=service/mock/storage.go
+
