@@ -42,6 +42,14 @@
   version = "v1.3.1"
 
 [[projects]]
+  digest = "1:d3e2e76f1fa5ba14f0bc5d6e83e4ea14c32330a9fc88b97a1df196613a2c81cf"
+  name = "github.com/gomodule/redigo"
+  packages = ["redis"]
+  pruneopts = "UT"
+  revision = "02dc2736dbc3a4a56907b0d5a9fead2f71b499db"
+  version = "v1.7.0"
+
+[[projects]]
   digest = "1:3af6be4fee7c08f81f13d36f04ffb63ad4b6b5aaba12cce96095c7c2863d4912"
   name = "github.com/gorilla/mux"
   packages = ["."]
@@ -279,6 +287,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/golang/mock/gomock",
+    "github.com/gomodule/redigo/redis",
     "github.com/gorilla/mux",
     "github.com/influxdata/platform/pkg/testing/assert",
     "github.com/lib/pq",

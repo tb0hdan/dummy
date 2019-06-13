@@ -21,6 +21,8 @@ func ReadEnv() *Config {
 	viper.SetDefault("SQLDB_DB_NAME", "db")
 	viper.SetDefault("SQLDB_MAX_OPEN_CONNS", 10)
 
+	viper.SetDefault("CACHE_ADDR", ":6379")
+
 	return &Config{
 		LogLevel:        viper.GetString("LOG_LEVEL"),
 		Port:            viper.GetInt("HTTP_PORT"),
@@ -34,5 +36,6 @@ func ReadEnv() *Config {
 			DBName:       viper.GetString("SQLDB_DB_NAME"),
 			MaxOpenConns: viper.GetInt("SQLDB_MAX_OPEN_CONNS"),
 		},
+		CacheAddr: viper.GetString("CACHE_ADDR"),
 	}
 }

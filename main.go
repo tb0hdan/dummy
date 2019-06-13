@@ -8,6 +8,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/akhripko/dummy/cache"
+
 	"github.com/akhripko/dummy/healthcheck"
 	"github.com/akhripko/dummy/log"
 	"github.com/akhripko/dummy/metrics"
@@ -36,15 +38,21 @@ func main() {
 	setupGracefulShutdown(cancel)
 	var wg = &sync.WaitGroup{}
 
-	// build storage
+	// build db
 	db, err := storage.NewSQLDB(ctx, storage.SQLDBConfig(config.SQLDB))
 	if err != nil {
 		log.Error("sql db init error:", err.Error())
 		os.Exit(1)
 	}
+	// build cache
+	cc, err := cache.NewRedis(ctx, config.CacheAddr)
+	if err != nil {
+		log.Error("cache init error:", err.Error())
+		os.Exit(1)
+	}
 
 	// build main service
-	srv := service.New(config.Port, db)
+	srv := service.New(config.Port, db, cc)
 	// build prometheus service
 	prometheusSrv := prometheus.New(config.PrometheusPort)
 	// build healthcheck service

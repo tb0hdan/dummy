@@ -19,7 +19,7 @@ type Service interface {
 	HealthCheck() error
 }
 
-func New(port int, storage Storage) Service {
+func New(port int, db DB, cache Cache) Service {
 	httpSrv := http.Server{
 		Addr: fmt.Sprintf(":%d", port),
 	}
@@ -28,7 +28,8 @@ func New(port int, storage Storage) Service {
 	// initialize state
 	go srv.initService()
 	srv.setupHTTP(&httpSrv)
-	srv.storage = storage
+	srv.db = db
+	srv.cache = cache
 
 	return &srv
 }
@@ -37,7 +38,8 @@ type service struct {
 	http      *http.Server
 	runErr    error
 	readiness bool
-	storage   Storage
+	db        DB
+	cache     Cache
 }
 
 func (s *service) setupHTTP(srv *http.Server) {
@@ -91,8 +93,11 @@ func (s *service) HealthCheck() error {
 	if s.runErr != nil {
 		return errors.New("run service issue")
 	}
-	if s.storage == nil || s.storage.Ping() != nil {
-		return errors.New("storage issue")
+	if s.db == nil || s.db.Ping() != nil {
+		return errors.New("db issue")
+	}
+	if s.cache == nil || s.cache.Ping() != nil {
+		return errors.New("cache issue")
 	}
 	return nil
 }

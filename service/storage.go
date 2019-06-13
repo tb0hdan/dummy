@@ -1,5 +1,9 @@
 package service
 
-type Storage interface {
+type DB interface {
+	Ping() error
+}
+
+type Cache interface {
 	Ping() error
 }

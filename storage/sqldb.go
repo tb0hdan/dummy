@@ -38,6 +38,7 @@ func NewSQLDB(ctx context.Context, c SQLDBConfig) (*SQLDB, error) {
 		err := db.Close()
 		if err != nil {
 			log.Error("close sqldb connection error:", err.Error())
+			return
 		}
 		log.Info("close sqldb connection")
 	}()

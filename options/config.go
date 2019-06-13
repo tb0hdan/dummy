@@ -6,6 +6,7 @@ type Config struct {
 	HealthCheckPort int
 	PrometheusPort  int
 	SQLDB           SQLDBConfig
+	CacheAddr       string
 }
 
 type SQLDBConfig struct {
