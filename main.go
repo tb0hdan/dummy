@@ -56,8 +56,7 @@ func main() {
 	// build prometheus service
 	prometheusSrv := prometheus.New(config.PrometheusPort)
 	// build healthcheck service
-	healthChecks := []func() error{srv.HealthCheck, prometheusSrv.HealthCheck}
-	healthSrv := healthcheck.New(config.HealthCheckPort, healthChecks)
+	healthSrv := healthcheck.New(config.HealthCheckPort, srv.HealthCheck, prometheusSrv.HealthCheck)
 
 	// run service
 	healthSrv.Run(ctx, wg)

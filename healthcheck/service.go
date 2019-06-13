@@ -19,7 +19,7 @@ type service struct {
 	http *http.Server
 }
 
-func New(port int, healthChecks []func() error) Service {
+func New(port int, healthChecks ...func() error) Service {
 	return &service{
 		http: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
