@@ -52,8 +52,8 @@ func (s *service) buildHandler() http.Handler {
 	// path -> handlers
 
 	// hello request
-	hello := Counter(metrics.HelloRequestCounts, s.hello)
-	hello = Timer(metrics.HelloRequestTiming, hello)
+	hello := metrics.Counter(metrics.HelloRequestCounts, s.hello)
+	hello = metrics.Timer(metrics.HelloRequestTiming, hello)
 	r.HandleFunc("/hello", hello).Methods("GET")
 
 	// ==============

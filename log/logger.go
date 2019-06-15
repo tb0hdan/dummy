@@ -1,6 +1,9 @@
 package log
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Logger interface {
 	Error(v ...interface{})
@@ -34,13 +37,25 @@ func SetLogger(l Logger) {
 var logger Logger
 
 func Error(v ...interface{}) {
+	if logger == nil {
+		fmt.Println(v...)
+		return
+	}
 	logger.Error(v...)
 }
 
 func Info(v ...interface{}) {
+	if logger == nil {
+		fmt.Println(v...)
+		return
+	}
 	logger.Info(v...)
 }
 
 func Debug(v ...interface{}) {
+	if logger == nil {
+		fmt.Println(v...)
+		return
+	}
 	logger.Debug(v...)
 }
