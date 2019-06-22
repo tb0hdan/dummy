@@ -25,8 +25,6 @@ func New(port int, db DB, cache Cache) Service {
 	}
 
 	var srv service
-	// initialize state
-	go srv.initService()
 	srv.setupHTTP(&httpSrv)
 	srv.db = db
 	srv.cache = cache
@@ -84,6 +82,8 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 			log.Error("service shutdown error:", err)
 		}
 	}()
+
+	s.readiness = true
 }
 
 func (s *service) HealthCheck() error {
