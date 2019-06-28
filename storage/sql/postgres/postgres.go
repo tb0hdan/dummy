@@ -1,20 +1,20 @@
-package storage
+package postgres
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 
-	"github.com/akhripko/dummy/log"
+	"github.com/adrollxid/bet1/log"
 
 	_ "github.com/lib/pq" //nolint
 )
 
-type SQLDB struct {
+type Postgres struct {
 	db *sql.DB
 }
 
-type SQLDBConfig struct {
+type Config struct {
 	Host         string
 	Port         int
 	User         string
@@ -23,12 +23,13 @@ type SQLDBConfig struct {
 	MaxOpenConns int
 }
 
-func NewSQLDB(ctx context.Context, c SQLDBConfig) (*SQLDB, error) {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		c.Host, c.Port, c.User, c.Pass, c.DBName)
+func New(ctx context.Context, c Config) (*Postgres, error) {
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		c.User, c.Pass, c.Host, c.Port, c.DBName)
 
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := sql.Open("postgres", connStr)
+
+	//db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +46,11 @@ func NewSQLDB(ctx context.Context, c SQLDBConfig) (*SQLDB, error) {
 
 	db.SetMaxOpenConns(c.MaxOpenConns)
 
-	return &SQLDB{
+	return &Postgres{
 		db: db,
 	}, nil
 }
 
-func (s *SQLDB) Ping() error {
+func (s *Postgres) Ping() error {
 	return s.db.Ping()
 }

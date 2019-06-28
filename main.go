@@ -8,15 +8,14 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/akhripko/dummy/cache"
-
+	"github.com/adrollxid/bet1/storage/cache/redis"
+	"github.com/adrollxid/bet1/storage/sql/postgres"
 	"github.com/akhripko/dummy/healthcheck"
 	"github.com/akhripko/dummy/log"
 	"github.com/akhripko/dummy/metrics"
 	"github.com/akhripko/dummy/options"
 	"github.com/akhripko/dummy/prometheus"
 	"github.com/akhripko/dummy/service"
-	"github.com/akhripko/dummy/storage"
 )
 
 func main() {
@@ -39,20 +38,20 @@ func main() {
 	var wg = &sync.WaitGroup{}
 
 	// build db
-	db, err := storage.NewSQLDB(ctx, storage.SQLDBConfig(config.SQLDB))
+	db, err := postgres.New(ctx, postgres.Config(config.SQLDB))
 	if err != nil {
 		log.Error("sql db init error:", err.Error())
 		os.Exit(1)
 	}
 	// build cache
-	cc, err := cache.NewRedis(ctx, config.CacheAddr)
+	ccl, err := redis.New(ctx, config.CacheAddr)
 	if err != nil {
 		log.Error("cache init error:", err.Error())
 		os.Exit(1)
 	}
 
 	// build main service
-	srv := service.New(config.Port, db, cc)
+	srv := service.New(config.Port, db, ccl)
 	// build prometheus service
 	prometheusSrv := prometheus.New(config.PrometheusPort)
 	// build healthcheck service

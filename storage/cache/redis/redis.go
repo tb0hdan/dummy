@@ -1,10 +1,10 @@
-package cache
+package redis
 
 import (
 	"context"
 	"errors"
 
-	"github.com/akhripko/dummy/log"
+	"github.com/adrollxid/bet1/log"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -16,8 +16,8 @@ type Redis struct {
 	pool *redis.Pool
 }
 
-// NewRedis returns the initialized Redis object
-func NewRedis(ctx context.Context, redisServer string) (*Redis, error) {
+// New returns the initialized Redis object
+func New(ctx context.Context, redisServer string) (*Redis, error) {
 	log.Info("Redis init: host=", redisServer)
 	c := new(Redis)
 	c.initNewPool(redisServer)
