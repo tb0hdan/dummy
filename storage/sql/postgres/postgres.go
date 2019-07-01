@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/adrollxid/bet1/log"
-
+	log "github.com/Sirupsen/logrus"
 	_ "github.com/lib/pq" //nolint
 )
 

@@ -2,6 +2,25 @@
 
 
 [[projects]]
+  digest = "1:04457f9f6f3ffc5fea48e71d62f2ca256637dee0a04d710288e27e05c8b41976"
+  name = "github.com/Sirupsen/logrus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
+  version = "v1.4.2"
+
+[[projects]]
+  branch = "master"
+  digest = "1:1f7bd3e78a828527917f91500e51a76f0e3281fd6887335c2e45be9a7a046303"
+  name = "github.com/adrollxid/bet1"
+  packages = [
+    "storage/cache/redis",
+    "storage/sql/postgres",
+  ]
+  pruneopts = "UT"
+  revision = "acdb6c28949ea08c50e95750f2f646b7697e5030"
+
+[[projects]]
   digest = "1:d6afaeed1502aa28e80a4ed0981d570ad91b2579193404256ce672ed0a609e0d"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -83,6 +102,14 @@
   packages = ["pkg/testing/assert"]
   pruneopts = "UT"
   revision = "d500d3cf55899337bc03259b46c58bae9c06f1eb"
+
+[[projects]]
+  digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
+  version = "v1.0.2"
 
 [[projects]]
   digest = "1:bdd53b87de8185da386bae179c84d4848854c6870bacacf6a154fe63e2e750f7"
@@ -286,6 +313,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Sirupsen/logrus",
+    "github.com/adrollxid/bet1/storage/cache/redis",
+    "github.com/adrollxid/bet1/storage/sql/postgres",
     "github.com/golang/mock/gomock",
     "github.com/gomodule/redigo/redis",
     "github.com/gorilla/mux",

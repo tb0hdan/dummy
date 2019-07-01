@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/adrollxid/bet1/storage/cache/redis"
 	"github.com/adrollxid/bet1/storage/sql/postgres"
 	"github.com/akhripko/dummy/healthcheck"
-	"github.com/akhripko/dummy/log"
 	"github.com/akhripko/dummy/metrics"
 	"github.com/akhripko/dummy/options"
 	"github.com/akhripko/dummy/prometheus"
@@ -21,13 +21,10 @@ import (
 func main() {
 	// read service config from os env
 	config := options.ReadEnv()
+
 	// init logger
-	err := initLogger(config)
-	if err != nil {
-		fmt.Println("log initialization error:", err.Error())
-		os.Exit(1)
-		return
-	}
+	initLogger(config)
+
 	log.Info("begin...")
 	// register metrics
 	metrics.Register()
@@ -67,14 +64,18 @@ func main() {
 	log.Info("end")
 }
 
-func initLogger(config *options.Config) error {
-	logLvl := log.StrToLogLevel(config.LogLevel)
-	logger, err := log.NewConsoleLogger(logLvl)
-	if err != nil {
-		return err
+func initLogger(config *options.Config) {
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stderr)
+
+	switch strings.ToLower(config.LogLevel) {
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	default:
+		log.SetLevel(log.DebugLevel)
 	}
-	log.SetLogger(logger)
-	return nil
 }
 
 func setupGracefulShutdown(stop func()) {

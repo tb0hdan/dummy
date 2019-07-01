@@ -8,9 +8,8 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/akhripko/dummy/metrics"
-
-	"github.com/akhripko/dummy/log"
 	"github.com/gorilla/mux"
 )
 

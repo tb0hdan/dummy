@@ -31,6 +31,10 @@ required = [
   name = "github.com/gomodule/redigo"
   version = "1.7.0"
 
+[[constraint]]
+  name = "github.com/Sirupsen/logrus"
+  version = "1.4.2"
+
 #[[constraint]]
 #  name = "github.com/golang/protobuf"
 #  version = "v1.2.0"

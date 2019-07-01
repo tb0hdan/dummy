@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/akhripko/dummy/log"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Service interface {
