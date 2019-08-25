@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
+	log "github.com/Sirupsen/logrus"
+	"github.com/adrollxid/bet1/storage/cache/redis"
+	"github.com/adrollxid/bet1/storage/sql/postgres"
 	"github.com/akhripko/dummy/healthcheck"
-	"github.com/akhripko/dummy/log"
 	"github.com/akhripko/dummy/metrics"
 	"github.com/akhripko/dummy/options"
 	"github.com/akhripko/dummy/prometheus"
@@ -19,13 +21,11 @@ import (
 func main() {
 	// read service config from os env
 	config := options.ReadEnv()
+
 	// init logger
-	err := initLogger(config)
-	if err != nil {
-		fmt.Println("log initialization error:", err.Error())
-		os.Exit(1)
-		return
-	}
+	initLogger(config)
+
+	log.Info("begin...")
 	// register metrics
 	metrics.Register()
 
@@ -34,14 +34,25 @@ func main() {
 	setupGracefulShutdown(cancel)
 	var wg = &sync.WaitGroup{}
 
+	// build db
+	db, err := postgres.New(ctx, postgres.Config(config.SQLDB))
+	if err != nil {
+		log.Error("sql db init error:", err.Error())
+		os.Exit(1)
+	}
+	// build cache
+	ccl, err := redis.New(ctx, config.CacheAddr)
+	if err != nil {
+		log.Error("cache init error:", err.Error())
+		os.Exit(1)
+	}
+
 	// build main service
-	srv := service.New(config.Port)
+	srv := service.New(config.Port, db, ccl)
 	// build prometheus service
 	prometheusSrv := prometheus.New(config.PrometheusPort)
 	// build healthcheck service
-	healthChecks := []func() error{srv.HealthCheck, prometheusSrv.StateCheck}
-	readinessChecks := []func() error{srv.ReadinessCheck, prometheusSrv.StateCheck}
-	healthSrv := healthcheck.New(config.HealthCheckPort, healthChecks, readinessChecks)
+	healthSrv := healthcheck.New(config.HealthCheckPort, srv.HealthCheck, prometheusSrv.HealthCheck)
 
 	// run service
 	healthSrv.Run(ctx, wg)
@@ -50,16 +61,21 @@ func main() {
 
 	// wait while services work
 	wg.Wait()
+	log.Info("end")
 }
 
-func initLogger(config *options.Config) error {
-	logLvl := log.StrToLogLevel(config.LogLevel)
-	logger, err := log.NewConsoleLogger(logLvl)
-	if err != nil {
-		return err
+func initLogger(config *options.Config) {
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stderr)
+
+	switch strings.ToLower(config.LogLevel) {
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	default:
+		log.SetLevel(log.DebugLevel)
 	}
-	log.SetLogger(logger)
-	return nil
 }
 
 func setupGracefulShutdown(stop func()) {

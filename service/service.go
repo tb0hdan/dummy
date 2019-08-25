@@ -8,27 +8,25 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/akhripko/dummy/metrics"
-
-	"github.com/akhripko/dummy/log"
 	"github.com/gorilla/mux"
 )
 
 type Service interface {
 	Run(ctx context.Context, wg *sync.WaitGroup)
 	HealthCheck() error
-	ReadinessCheck() error
 }
 
-func New(port int) Service {
+func New(port int, db DB, cache Cache) Service {
 	httpSrv := http.Server{
 		Addr: fmt.Sprintf(":%d", port),
 	}
 
 	var srv service
-	// initialize state
-	go srv.initService()
 	srv.setupHTTP(&httpSrv)
+	srv.db = db
+	srv.cache = cache
 
 	return &srv
 }
@@ -37,6 +35,8 @@ type service struct {
 	http      *http.Server
 	runErr    error
 	readiness bool
+	db        DB
+	cache     Cache
 }
 
 func (s *service) setupHTTP(srv *http.Server) {
@@ -49,8 +49,8 @@ func (s *service) buildHandler() http.Handler {
 	// path -> handlers
 
 	// hello request
-	hello := Counter(metrics.HelloRequestCounts, s.hello)
-	hello = Timer(metrics.HelloRequestTiming, hello)
+	hello := metrics.Counter(metrics.HelloRequestCounts, s.hello)
+	hello = metrics.Timer(metrics.HelloRequestTiming, hello)
 	r.HandleFunc("/hello", hello).Methods("GET")
 
 	// ==============
@@ -81,6 +81,8 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 			log.Error("service shutdown error:", err)
 		}
 	}()
+
+	s.readiness = true
 }
 
 func (s *service) HealthCheck() error {
@@ -90,16 +92,11 @@ func (s *service) HealthCheck() error {
 	if s.runErr != nil {
 		return errors.New("run service issue")
 	}
-	// TODO: add more checks like s.db.Ping()
-	return nil
-}
-
-func (s *service) ReadinessCheck() error {
-	if !s.readiness {
-		return errors.New("service is't ready yet")
+	if s.db == nil || s.db.Ping() != nil {
+		return errors.New("db issue")
 	}
-	if s.runErr != nil {
-		return errors.New("run service issue")
+	if s.cache == nil || s.cache.Ping() != nil {
+		return errors.New("cache issue")
 	}
 	return nil
 }

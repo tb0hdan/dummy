@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/akhripko/dummy/log"
+	log "github.com/Sirupsen/logrus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Service interface {
 	Run(ctx context.Context, wg *sync.WaitGroup)
-	StateCheck() error
+	HealthCheck() error
 }
 
 type service struct {
@@ -66,7 +66,7 @@ func handler() http.Handler {
 	return handler
 }
 
-func (s *service) StateCheck() error {
+func (s *service) HealthCheck() error {
 	if !s.readiness {
 		return errors.New("prometheus service is't ready yet")
 	}

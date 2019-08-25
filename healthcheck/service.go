@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/akhripko/dummy/log"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Service interface {
@@ -19,11 +19,11 @@ type service struct {
 	http *http.Server
 }
 
-func New(port int, healthChecks []func() error, readinessChecks []func() error) Service {
+func New(port int, healthChecks ...func() error) Service {
 	return &service{
 		http: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
-			Handler: buildHandler(healthChecks, readinessChecks),
+			Handler: buildHandler(healthChecks),
 		},
 	}
 }
@@ -53,12 +53,13 @@ func (s *service) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}()
 }
 
-func buildHandler(healthChecks []func() error, readinessChecks []func() error) http.Handler {
+func buildHandler(healthChecks []func() error) http.Handler {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/version", serveVersion)
-	handler.HandleFunc("/", func(res http.ResponseWriter, _ *http.Request) { serveCheck(res, healthChecks) })
-	handler.HandleFunc("/health", func(res http.ResponseWriter, _ *http.Request) { serveCheck(res, healthChecks) })
-	handler.HandleFunc("/ready", func(res http.ResponseWriter, _ *http.Request) { serveCheck(res, readinessChecks) })
+	var checks = func(w http.ResponseWriter, _ *http.Request) { serveCheck(w, healthChecks) }
+	handler.HandleFunc("/", checks)
+	handler.HandleFunc("/health", checks)
+	handler.HandleFunc("/ready", checks)
 	return handler
 }
 
@@ -71,20 +72,20 @@ func writeFile(file string, response http.ResponseWriter) {
 	}
 }
 
-func serveCheck(response http.ResponseWriter, checks []func() error) {
+func serveCheck(w http.ResponseWriter, checks []func() error) {
 	writtenHeader := false
 	for _, check := range checks {
 		if err := check(); err != nil {
 			if !writtenHeader {
-				response.WriteHeader(http.StatusInternalServerError)
+				w.WriteHeader(http.StatusInternalServerError)
 				writtenHeader = true
 			}
-			response.Write([]byte(err.Error())) // nolint
-			response.Write([]byte("\n\n"))      // nolint
+			w.Write([]byte(err.Error())) // nolint
+			w.Write([]byte("\n\n"))      // nolint
 		}
 	}
 
 	if !writtenHeader {
-		response.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
